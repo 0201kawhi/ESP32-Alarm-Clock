@@ -26,6 +26,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 float currentTemp = 0.0;
+float currentHum = 0.0;
 unsigned long lastDHTRead = 0; // 用於非阻塞式讀取溫度的計時器
 
 // --- 硬體腳位 ---
@@ -117,6 +118,7 @@ void loop() {
   // 2. 非阻塞式讀取溫度 (每 2000 毫秒讀一次，避免 DHT 拖慢迴圈速度)
   if (millis() - lastDHTRead > 2000) {
     currentTemp = dht.readTemperature();
+    currentHum = dht.readHumidity();
     lastDHTRead = millis();
   }
 
@@ -190,10 +192,19 @@ void loop() {
       display.println("Temp Error");
     } else {
       display.printf("Temp: %.1f C\n", currentTemp);
+
     }
     
+    // 顯示humidity
+    display.setCursor(0, 40);
+    if (isnan(currentHum)) {
+      display.println("Hum Error");
+    } else {
+      display.printf("Hum: %.1f %%\n", currentHum);
+    }
+
     // 顯示鬧鐘設定與提示
-    display.setCursor(0, 45);
+    display.setCursor(0, 50);
     display.printf("Alarm: %02d:%02d ", alarmHour, alarmMinute);
     if (isAlarmRinging) {
       display.print("[RING!]");
